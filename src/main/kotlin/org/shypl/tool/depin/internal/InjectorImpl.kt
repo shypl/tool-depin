@@ -162,20 +162,25 @@ internal class InjectorImpl : Injector {
 		val circular = producingStack.contains(clazz)
 		producingStack.add(clazz)
 		
-		if (circular) {
-			throw InjectException("Circular dependency:\n" + producingStack.joinToString("\n") { " - $it" })
+		try {
+			
+			if (circular) {
+				throw InjectException("Circular dependency:\n" + producingStack.joinToString("\n") { " - $it" })
+			}
+			
+			val constructor = clazz.primaryConstructor!!
+			val args = argsExtractor(constructor)
+			
+			registry.observeProduceBefore(clazz)
+			
+			val obj = constructor.call(*args.toTypedArray())
+			
+			registry.observeProduceAfter(clazz, obj)
+			
+			return obj
 		}
-		
-		registry.observeProduce(clazz)
-		
-		val constructor = clazz.primaryConstructor!!
-		val args = argsExtractor(constructor)
-		
-		val obj = constructor.call(*args.toTypedArray())
-		
-		producingStack.remove()
-		registry.observeProduce(clazz, obj)
-		
-		return obj
+		finally {
+			producingStack.remove()
+		}
 	}
 }

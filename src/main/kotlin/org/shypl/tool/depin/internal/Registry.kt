@@ -92,11 +92,11 @@ internal class Registry {
 		return null
 	}
 	
-	fun observeProduce(clazz: KClass<*>) {
+	fun observeProduceBefore(clazz: KClass<*>) {
 		produceObserversBefore.forEach { it(clazz) }
 	}
 	
-	fun observeProduce(clazz: KClass<*>, obj: Any) {
+	fun observeProduceAfter(clazz: KClass<*>, obj: Any) {
 		produceObserversAfter.forEach { it(clazz, obj) }
 	}
 }
